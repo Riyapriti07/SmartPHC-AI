@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit PHC Update</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Background Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image:
+    linear-gradient(rgba(0, 60, 80, 0.55), rgba(0, 40, 60, 0.65)),
+    url("/static/images/main1.jpg");
+
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Glassmorphism Form Container */
+        .form-container {
+    background: rgba(15, 32, 45, 0.75); /* FIX: darker/more opaque so white
+        field labels & solid input boxes read clearly over the busy photo
+        background (previously very light/translucent, low contrast). */
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45);
+    max-width: 500px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    animation: fadeIn 1s ease-in-out;
+    text-align: center;
+}
+
+        /* Heading Styling */
+        h2 {
+            color: #4fc3f7;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* FIX: explicit label above every field, so the field's purpose
+           stays visible even after you've typed into it (placeholder text
+           alone disappears on focus/input - that was the "fields aren't
+           displayed clearly" issue). */
+        .field-group {
+            text-align: left;
+            margin-bottom: 14px;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #bfe7f5;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        /* Input Styling */
+        .form-control {
+            width: 100%;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            background: #ffffff;   /* FIX: solid white field instead of
+                near-transparent - text is now always legible regardless
+                of the background photo behind it. */
+            color: #10202d;        /* FIX: dark text on the white field
+                (was white-on-white, essentially invisible while typing). */
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 0;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #7c8b96;
+        }
+
+        .form-control:focus {
+            background: #ffffff;
+            border: 2px solid #4fc3f7;
+            box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
+        }
+
+        /* Button Styling */
+        .btn-custom {
+            background: #1e90ff;
+            border: none;
+            color: #fff;
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-custom:hover {
+            background: #004080;
+            transform: scale(1.05);
+        }
+
+        /* View Dashboard Button */
+        .btn-secondary {
+            display: block;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: #fff;
+            padding: 10px;
+            margin-top: 10px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Toggle Buttons */
+        .toggle-btn {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn button {
+            width: 48%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #1e90ff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-btn button:hover {
+            background: #004080;
+        }
+
+        /* Fade-in Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+            color: white;
+            font-weight: 500;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <a href="javascript:history.back()" class="back-btn">&larr; Back</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="max-width:500px; margin:60px auto 0;">
+          {% for category, message in messages %}
+            <div style="background:{{ '#ffdddd' if category in ['danger','warning'] else '#ddffdd' }}; color:#222; padding:12px 18px; border-radius:8px; margin-bottom:8px;">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="form-container">
+        <div class="toggle-btn">
+            <button onclick="showForm('patient-form')">Submit Patient Data</button>
+            <button onclick="showForm('daily-form')">Submit Daily Update</button>
+        </div>
+
+        <!-- Patient Data Form (field names/method/endpoint unchanged) -->
+        <div id="patient-form">
+            <h2>Submit Patient Data</h2>
+            <form method="POST">
+                <!-- NEW: every patient record now has to say which PHC it
+                     came from. This is what lets the dashboard show each
+                     PHC's own patients instead of one shared list. The
+                     datalist offers PHC names already in the database so
+                     spellings stay consistent, but you can still type a
+                     brand-new PHC name. -->
+                <div class="field-group">
+                    <label for="patient_phc">PHC Name</label>
+                    <input type="text" id="patient_phc" name="phc_name" class="form-control"
+                           list="phc-options" placeholder="e.g. Government PHC Theni" required>
+                    <datalist id="phc-options">
+                        {% for phc in known_phcs %}
+                        <option value="{{ phc }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="field-group">
+                    <label for="patient_name">Patient Name</label>
+                    <input type="text" id="patient_name" name="patient_name" class="form-control" placeholder="e.g. Anitha Kumar" required>
+                </div>
+                <div class="field-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" class="form-control" placeholder="e.g. 34" min="0" required>
+                </div>
+                <div class="field-group">
+                    <label for="phno">Phone Number</label>
+                    <input type="tel" id="phno" name="phno" class="form-control" placeholder="e.g. 9876543210" required>
+                </div>
+                <div class="field-group">
+                    <label for="p_diagnosis">Diagnosis</label>
+                    <textarea id="p_diagnosis" name="diagnosis" class="form-control" placeholder="e.g. Seasonal fever"></textarea>
+                </div>
+                <div class="field-group">
+                    <label for="p_treatment">Treatment Provided</label>
+                    <textarea id="p_treatment" name="treatment" class="form-control" placeholder="e.g. Paracetamol, rest advised"></textarea>
+                </div>
+                <button type="submit" class="btn-custom">Submit Patient Data</button>
+            </form>
+        </div>
+
+        <!-- Daily Update Form (Initially Hidden; field names/method/endpoint unchanged) -->
+        <div id="daily-form" style="display: none;">
+            <h2>Submit PHC Daily Update</h2>
+            <div class="field-group" style="border:1px dashed #6c8ebf; padding:12px; border-radius:8px;">
+                <label for="report_file">Auto-fill from a report (PDF or TXT) - powered by Nexus AI</label>
+                <input type="file" id="report_file" accept=".pdf,.txt" class="form-control">
+                <button type="button" class="btn-custom" id="extractBtn" onclick="extractReport()">Extract with AI</button>
+                <small id="extractStatus" style="display:block; margin-top:6px;"></small>
+            </div>
+            <form method="POST">
+                <div class="field-group">
+                    <label for="phc_name">PHC Name</label>
+                    <!-- Same PHC suggestions as the patient form, so both
+                         forms file records under identical names. -->
+                    <input type="text" id="phc_name" name="phc_name" class="form-control"
+                           list="phc-options" placeholder="e.g. Government PHC Theni" required>
+                </div>
+                <div class="field-group">
+                    <label for="patient_count">Patient Count</label>
+                    <input type="number" id="patient_count" name="patient_count" class="form-control" placeholder="e.g. 24" min="0" required>
+                </div>
+                <div class="field-group">
+                    <label for="d_diagnosis">Diagnosis</label>
+                    <textarea id="d_diagnosis" name="diagnosis" class="form-control" placeholder="e.g. Cold, Flu"></textarea>
+                </div>
+                <div class="field-group">
+                    <label for="d_treatment">Treatment Provided</label>
+                    <textarea id="d_treatment" name="treatment" class="form-control" placeholder="e.g. Tablets + rest"></textarea>
+                </div>
+                <button type="submit" class="btn-custom">Submit Update</button>
+            </form>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn-secondary">View Dashboard</a>
+    </div>
+
+    <script>
+        function showForm(formId) {
+            document.getElementById('patient-form').style.display = (formId === 'patient-form') ? 'block' : 'none';
+            document.getElementById('daily-form').style.display = (formId === 'daily-form') ? 'block' : 'none';
+        }
+
+        // Report-to-Form: the AI only PRE-FILLS the fields; you review and submit.
+        async function extractReport() {
+            const fileInput = document.getElementById('report_file');
+            const status = document.getElementById('extractStatus');
+            const button = document.getElementById('extractBtn');
+            if (!fileInput.files.length) {
+                status.textContent = 'Please choose a PDF or TXT report first.';
+                return;
+            }
+            const data = new FormData();
+            data.append('report', fileInput.files[0]);
+            button.disabled = true;
+            status.textContent = 'Reading report with AI...';
+            try {
+                const response = await fetch('/extract-report', { method: 'POST', body: data });
+                const result = await response.json();
+                if (!response.ok) { throw new Error(result.error || 'Extraction failed.'); }
+                const f = result.fields;
+                if (f.phc_name) { document.getElementById('phc_name').value = f.phc_name; }
+                if (f.patient_count !== null) { document.getElementById('patient_count').value = f.patient_count; }
+                if (f.diagnosis) { document.getElementById('d_diagnosis').value = f.diagnosis; }
+                if (f.treatment) { document.getElementById('d_treatment').value = f.treatment; }
+                status.textContent = 'Fields filled from the report' + (result.cached ? ' (cached)' : '') +
+                    '. Please review them, then press Submit Update.';
+            } catch (error) {
+                status.textContent = 'Could not auto-fill: ' + error.message;
+            }
+            button.disabled = false;
+        }
+    
+    </script>
+</body>
+</html>

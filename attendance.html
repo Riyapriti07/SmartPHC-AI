@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Records</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling with Background */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image:
+    linear-gradient(rgba(0, 60, 80, 0.60), rgba(0, 40, 60, 0.70)),
+    url("/static/images/main1.jpg");
+
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+background-attachment: fixed;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Container for the Content */
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            max-width: 1000px;
+            width: 100%;
+            margin: 10px 0;
+            padding-top: 4rem;
+            text-align: center;
+            animation: fadeIn 1.5s ease-in-out;
+            position: relative;
+        }
+
+        /* Heading Styling */
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1e90ff;
+            font-weight: bold;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        table, th, td {
+            border: 1px solid #fff;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #1e90ff;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Back Button Styling */
+        .back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+            color: white;
+            font-weight: 500;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* right Button */
+        .right-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px; /* Moves to right corner */
+            background: #1e90ff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .right-btn:hover {
+            background: #004080;
+        }
+        .toolbar { display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
+        select, input[type=text] { padding:8px 10px; border-radius:6px; border:1px solid #888; background:#fff; color:#000; font-size:0.95rem; }
+        .summary { margin-bottom:1rem; font-size:1rem; }
+        .small { font-size:0.85rem; opacity:0.85; margin-top:4px; }
+        .flash { padding:8px 12px; border-radius:6px; margin-bottom:1rem; background:#1b7f3b; }
+        .flash.danger { background:#b3261e; }
+        details { margin-top:1rem; text-align:left; }
+        summary { cursor:pointer; color:#1e90ff; font-weight:bold; }
+        .tbl-wrap { overflow-x:auto; }
+        .save-btn { background:#1e90ff; color:#fff; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <a href="javascript:history.back()" class="back-btn">← Back</a>
+    <a href="#" class="right-btn" onclick="sendEmail(event)">Send Update</a>
+    <div class="container">
+        <h2>AUTOMATED HEALTHCARE MONITORING 
+                Attendance Records</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="get" class="toolbar">
+            <label for="phc">PHC:</label>
+            <select name="phc" id="phc" onchange="this.form.submit()">
+                <option value="">All PHCs</option>
+                {% for p in phcs %}
+                <option value="{{ p }}" {{ 'selected' if p == selected }}>{{ p }}</option>
+                {% endfor %}
+                <option value="{{ unassigned }}" {{ 'selected' if selected == unassigned }}>{{ unassigned }}</option>
+            </select>
+        </form>
+
+        <div class="summary">
+            <strong>{{ selected or 'All PHCs' }}</strong> &mdash; today ({{ summary.date }}):
+            {{ summary.present }} of {{ summary.total }} doctors/staff present
+            {% if summary.absent %}<div class="small">Not marked yet: {{ summary.absent|join(', ') }}</div>{% endif %}
+        </div>
+
+        <div class="tbl-wrap">
+        <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>PHC</th><th>Engagement</th><th>Location</th><th>Timestamp</th></tr></thead>
+            <tbody>
+            {% for r in records %}
+                <tr><td>{{ r.id }}</td><td>{{ r.name }}</td><td>{{ r.role }}</td><td>{{ r.phc }}</td>
+                    <td>{{ r.engagement }}</td><td>{{ r.location }}</td><td>{{ r.timestamp }}</td></tr>
+            {% else %}
+                <tr><td colspan="7">No attendance records found{{ ' for ' ~ selected if selected }}.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        {% if logged_in %}
+        <details>
+            <summary>Assign doctors/staff to a PHC</summary>
+            <datalist id="phcList">{% for p in phcs %}<option value="{{ p }}">{% endfor %}</datalist>
+            <div class="tbl-wrap">
+            <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>PHC</th><th></th></tr></thead>
+                <tbody>
+                {% for s in staff_rows %}
+                <tr>
+                    <td>{{ s.id }}
+                        <form id="f{{ s.id }}" method="post" action="/attendance/assign"></form>
+                        <input type="hidden" form="f{{ s.id }}" name="id" value="{{ s.id }}">
+                        <input type="hidden" form="f{{ s.id }}" name="filter" value="{{ selected }}"></td>
+                    <td>{{ s.name }}</td>
+                    <td><select form="f{{ s.id }}" name="role">{% for role in roles %}<option {{ 'selected' if role == s.role }}>{{ role }}</option>{% endfor %}</select></td>
+                    <td><input type="text" form="f{{ s.id }}" name="phc" list="phcList" value="{{ s.phc }}" placeholder="{{ unassigned }}"></td>
+                    <td><button type="submit" form="f{{ s.id }}" class="save-btn">Save</button></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </details>
+        {% endif %}
+    </div>
+    <script>
+          function sendEmail(event) {
+            event.preventDefault(); // Prevent page reload
+            
+            fetch('/send-email', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("✅ Email sent successfully!");
+                } else {
+                    alert("❌ Error: " + data.message);
+                }
+            })
+            .catch(error => alert("❌ Error sending email: " + error));
+        }
+    </script>
+</body>
+</html>

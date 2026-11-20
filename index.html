@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Monitoring System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Global Styles */
+      html {
+    scroll-behavior: smooth; /* FIX: smooth scroll to #services / #contact */
+}
+      body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-size: cover;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* FIX: without this, anchor-scrolling lands each section partway under
+   the fixed navbar (72px tall). This makes #services / #contact stop
+   at a visible position below it. */
+#services, #contact {
+    scroll-margin-top: 90px;
+}
+
+/* Navigation Bar */
+.navbar {
+    width: 100%;
+    background: rgba(42, 42, 58, 0.95);
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    padding: 12px 20px;
+    transition: 0.3s;
+    border-radius: 8px;
+}
+
+.navbar a:hover {
+    background: rgba(255, 111, 97, 0.8);
+    transform: scale(1.1);
+}
+
+/* Page Title */
+.title {
+    margin-top: 120px;
+    font-size: 3rem;
+    font-weight: 800;
+    text-align: center;
+    color: #ffcc00;
+    text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* Main Container */
+.container {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    margin-top: 100px;
+}
+
+h2{
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Buttons */
+.btn {
+    background: linear-gradient(135deg, #ff6f61, #ff3b2f);
+    color: #fff;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    margin: 0.5rem;
+    box-shadow: 0 5px 15px rgba(255, 111, 97, 0.5);
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, #ff3b2f, #ff0000);
+    transform: scale(1.05);
+}
+
+/* ================================
+   LOGIN & SIGNUP MODAL
+================================ */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 420px;
+    max-width: 90%;
+
+    padding: 35px;
+
+    background: rgba(255, 255, 255, 0.97);
+    color: #123;
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.35);
+
+    z-index: 2000;
+
+    text-align: center;
+
+    animation: modalAppear 0.35s ease;
+}
+
+/* Modal Animation */
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -45%) scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Medical Icon */
+
+.modal::before {
+    content: "✚";
+
+    display: flex;
+
+    width: 65px;
+    height: 65px;
+
+    margin: 0 auto 15px;
+
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(
+        135deg,
+        #00b4d8,
+        #0077b6
+    );
+
+    color: white;
+
+    border-radius: 50%;
+
+    font-size: 32px;
+    font-weight: bold;
+
+    box-shadow:
+        0 8px 20px rgba(0, 119, 182, 0.3);
+}
+
+/* Modal Heading */
+
+.modal h3 {
+    margin: 5px 0 8px;
+
+    font-size: 30px;
+
+    color: #003b5c;
+
+    font-weight: 700;
+}
+
+/* Subtitle */
+
+.modal h3::after {
+    content: "PHC Monitoring System";
+
+    display: block;
+
+    margin-top: 6px;
+
+    font-size: 13px;
+
+    font-weight: 400;
+
+    color: #6c7a86;
+}
+
+/* Input Fields */
+
+.modal input {
+    box-sizing: border-box;
+
+    width: 100%;
+
+    padding: 14px 16px;
+
+    margin: 8px 0;
+
+    border: 1.5px solid #d5e1e8;
+
+    border-radius: 12px;
+
+    background: #f7fafc;
+
+    color: #123;
+
+    font-size: 15px;
+
+    outline: none;
+
+    transition: 0.3s;
+}
+
+.modal input:focus {
+    border-color: #00a6d6;
+
+    background: white;
+
+    box-shadow:
+        0 0 0 3px rgba(0, 166, 214, 0.12);
+}
+
+.modal input::placeholder {
+    color: #8a99a5;
+}
+
+/* Login / Signup Button */
+
+.modal button {
+    width: 100%;
+
+    padding: 14px;
+
+    margin-top: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00b4d8,
+            #0077b6
+        );
+
+    color: white;
+
+    border: none;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    transition: 0.3s;
+
+    box-shadow:
+        0 7px 18px rgba(0, 119, 182, 0.25);
+}
+
+.modal button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 25px rgba(0, 119, 182, 0.35);
+}
+
+/* Signup / Login Text */
+
+.modal p {
+    margin-top: 20px;
+
+    color: #65727c;
+
+    font-size: 14px;
+}
+
+.modal p a {
+    color: #0077b6;
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+.modal p a:hover {
+    text-decoration: underline;
+}
+
+/* Close Button */
+
+.close {
+    position: absolute;
+
+    top: 15px;
+    right: 20px;
+
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    color: #667;
+
+    font-size: 24px;
+
+    cursor: pointer;
+
+    transition: 0.3s;
+}
+
+.close:hover {
+    background: #e8f4f8;
+
+    color: #0077b6;
+
+    transform: rotate(90deg);
+}
+
+/* Mobile */
+
+@media (max-width: 500px) {
+
+    .modal {
+        padding: 28px 22px;
+
+        width: 85%;
+    }
+
+    .modal h3 {
+        font-size: 25px;
+    }
+}
+
+/* Services Section */
+.services {
+    text-align: center;
+    padding: 70px 20px;
+    background: linear-gradient(135deg, #f0f8ff, #e6f0ff); /* Soft gradient background */
+}
+
+/* Section Header */
+.services-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #003366;
+    margin-bottom: 15px;
+    text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.services-header p {
+    font-size: 1.2rem;
+    color: #444;
+    margin-bottom: 40px;
+}
+
+/* Service Boxes */
+.services-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.service-box {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 320px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    border-bottom: 5px solid #004080;
+}
+
+.service-box:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    border-bottom: 5px solid #ff6600;
+}
+
+/* Service Box Content */
+.service-box img {
+    width: 85px;
+    height: 85px;
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+}
+
+.service-box:hover img {
+    transform: scale(1.1);
+}
+
+.service-box h3 {
+    font-size: 1.6rem;
+    color: #004080;
+    margin-bottom: 12px;
+}
+
+.service-box p {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.7;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .services-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .service-box {
+        width: 90%;
+    }
+}
+
+/* Contact Section */
+.contact-section {
+    background: white;
+    border-radius: 12px;
+    padding: 50px;
+    text-align: center;
+    max-width: 500px;
+    margin: 40px auto;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    font-family: 'Arial', sans-serif;
+    border: 3px solid #004080;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.contact-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.contact-section h2 {
+    font-size: 26px;
+    color: #004080;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.contact-info p {
+    font-size: 17px;
+    color: #444;
+    margin: 12px 0;
+}
+
+.contact-info a {
+    color: #004080;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+.contact-info a:hover {
+    color: #ff6600;
+}
+
+.contact-info {
+    padding: 15px;
+    border-top: 2px solid #004080;
+    margin-top: 20px;
+}
+
+.contact-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: #004080;
+    color: #fff;
+    font-size: 17px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s ease-in-out;
+}
+
+.contact-btn:hover {
+    background: #ff6600;
+}
+
+ 
+
+
+/* Footer */
+.footer {
+    width: 100%;
+    text-align: center;
+    background: rgba(42, 42, 58, 0.95);
+    padding: 15px;
+    position: fixed;
+    bottom: 0;
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .container {
+        width: 90%;
+    }
+
+    .services {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .service-box {
+        width: 90%;
+    }
+}
+/* Hero Section */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: url('static/images/main1.jpg') no-repeat center center/cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+}
+
+/* Overlay for better contrast */
+.hero .overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    top: 0;
+    left: 0;
+}
+
+/* Hero Content */
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 15px rgba(0, 0, 0, 0.7);
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    font-weight: 300;
+    margin-bottom: 20px;
+    opacity: 0.8;
+    animation: fadeIn 2s ease-in-out;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    .hero-btn {
+        font-size: 0.9rem;
+        padding: 10px 20px;
+    }
+}
+.auth-description {
+    margin: 0 0 15px !important;
+
+    color: #71808c !important;
+
+    font-size: 14px !important;
+}
+
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="position:fixed; top:70px; left:50%; transform:translateX(-50%); z-index:2000; width:90%; max-width:500px;">
+          {% for category, message in messages %}
+            <div style="background:{{ '#ffdddd' if category in ['danger','warning'] else '#ddffdd' }}; color:#222; padding:12px 18px; border-radius:8px; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,0.3);">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <div class="navbar">
+        <a href="#top">Home</a>
+        <a href="#" onclick="openModal('loginModal')">Login</a>
+        <a href="#" onclick="openModal('signupModal')">Sign Up</a>
+        <a href="#services">Services</a>
+        <a href="#contact">Contact</a>
+    </div>
+    <header class="hero" id="top">
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <h1>Centralized PHC Monitoring & Management</h1>
+            <p>Efficient, real-time tracking for better healthcare management</p>
+        </div>
+    </header>
+    <section id="services" class="services">
+        <div class="services-header">
+            <h1>Our Services</h1>
+            <p>Delivering excellence with a range of professional solutions</p>
+        </div>
+        <div class="services-container">
+            <div class="service-box">
+                <img src="static/images/service11.jpg" alt="Service 1">
+                <h3>Maternal and Child Healthcare</h3>
+                <p> Provides antenatal/postnatal care, safe deliveries, newborn care, and immunization.</p>
+            </div>
+            <div class="service-box">
+                <img src="static/images/service2.jpg" alt="Service 2">
+                <h3>Family Planning Services</h3>
+                <p>Offers contraceptives, sterilization, and reproductive health counseling.</p>
+            </div>
+            <div class="service-box">
+                <img src="static/images/service3.webp" alt="Service 3">
+                <h3>Emergency & First Aid Services</h3>
+                <p>Provides immediate care for injuries, poisoning, and snake bites.</p>
+            </div>
+            <div class="service-box">
+                <img src="static/images/service4.jpg" alt="Service 3">
+                <h3>National Health Programs</h3>
+                <p>Implements government programs like polio vaccination and TB control.</p>
+            </div>
+            <div class="service-box">
+                <img src="static/images/service5.jpg" alt="Service 3">
+                <h3>Health Education & Awareness </h3>
+                <p>Promotes hygiene, sanitation, and disease prevention.</p>
+            </div>
+            <div class="service-box">
+                <img src="static/images/service6.jpg" alt="Service 3">
+                <h3>General Outpatient Services</h3>
+                <p>PHCs treat minor illnesses, provide free medicines, perform minor surgeries, and manage chronic diseases like diabetes and hypertension.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="contact" class="contact-section">
+        <h2>Contact Us</h2>
+        <p>Have questions or need assistance? Reach out to us.</p>
+        <div class="contact-info">
+            <p><strong>Email:</strong> <a href="mailto:phc_support@example.com">phc_support@example.com</a></p>
+            <p><strong>Phone:</strong> +91 9876543210</p>
+            <p><strong>Address:</strong> 123 Healthcare Avenue, City, Country</p>
+        </div>
+    </section>
+    
+    
+    
+    <footer class="footer">
+        &copy; 2024 PHC Monitoring System. All Rights Reserved.
+    </footer>
+<!-- Login Modal -->
+<!-- Login Modal -->
+<div id="loginModal" class="modal">
+
+    <span class="close"
+          onclick="closeModal('loginModal')">&times;</span>
+
+    <h3>Welcome Back</h3>
+
+    <p class="auth-description">
+        Login to access PHC monitoring services
+    </p>
+
+    <form id="loginForm">
+
+        <input
+            type="email"
+            id="loginEmail"
+            placeholder="Enter your email"
+            required>
+
+        <input
+            type="password"
+            id="loginPassword"
+            placeholder="Enter your password"
+            required>
+
+        <button type="submit">
+            Login to Dashboard
+        </button>
+
+    </form>
+
+    <p>
+        New user?
+        <a href="#"
+           onclick="closeModal('loginModal'); openModal('signupModal')">
+           Create an account
+        </a>
+    </p>
+
+</div>
+
+<!-- Signup Modal -->
+
+<div id="signupModal" class="modal">
+
+    <span class="close"
+          onclick="closeModal('signupModal')">&times;</span>
+
+    <h3>Create Account</h3>
+
+    <p class="auth-description">
+        Register your PHC account to continue
+    </p>
+
+    <form id="signupForm">
+
+        <input
+            type="text"
+            id="phc"
+            placeholder="PHC Center Name"
+            required>
+
+        <input
+            type="text"
+            id="signupName"
+            placeholder="Enter your name"
+            required>
+
+        <input
+            type="email"
+            id="signupEmail"
+            placeholder="Enter your email"
+            required>
+
+        <input
+            type="text"
+            id="signupPhone"
+            placeholder="Phone Number"
+            required>
+
+        <input
+            type="password"
+            id="signupPassword"
+            placeholder="Create a password"
+            required>
+
+        <button type="submit">
+            Create PHC Account
+        </button>
+
+    </form>
+
+    <p>
+        Already have an account?
+        <a href="#"
+           onclick="closeModal('signupModal'); openModal('loginModal')">
+           Login
+        </a>
+    </p>
+
+</div>
+
+<script>
+    function openModal(modalId) {
+        // FIX: close every other modal first. Previously, opening Signup
+        // then clicking Login left BOTH modals with display:block at once;
+        // since signupModal comes later in the HTML it rendered on top and
+        // visually hid the login box (it wasn't actually broken - it was
+        // just buried underneath).
+        document.querySelectorAll('.modal').forEach(function (m) {
+            m.style.display = 'none';
+        });
+        document.getElementById(modalId).style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    document.getElementById("signupForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const formData = {
+            phc: document.getElementById("phc").value,
+            name: document.getElementById("signupName").value,
+            email: document.getElementById("signupEmail").value,
+            phone: document.getElementById("signupPhone").value,
+            password: document.getElementById("signupPassword").value
+        };
+
+        fetch("/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.text())
+        .then(data => {
+            alert(data);
+            closeModal("signupModal");
+        });
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const formData = {
+            email: document.getElementById("loginEmail").value,
+            password: document.getElementById("loginPassword").value
+        };
+
+        fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.text())
+        .then(data => {
+            if (data === "success") {
+                window.location.href = "/view";
+            } else {
+                alert(data);
+            }
+        });
+    });
+
+
+function sendLocation(position) {
+
+    fetch("/update-location", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+        })
+
+    });
+
+}
+
+function locationError(error) {
+
+    console.log("Location permission denied");
+
+}
+
+if (navigator.geolocation) {
+
+    navigator.geolocation.getCurrentPosition(
+        sendLocation,
+        locationError
+    );
+
+}
+
+</script>
+</body>
+</html>

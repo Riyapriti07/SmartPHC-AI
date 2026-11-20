@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPHC - Upload Documents</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 550px;
+            margin: 60px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #176b57;
+            text-align: center;
+        }
+
+        p {
+            color: #555;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #176b57;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #105342;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #176b57;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Upload PHC Documents</h2>
+
+    <p>Upload healthcare guidelines, reports or PHC information.</p>
+
+{% if message %}
+    <p style="color: green;">{{ message }}</p>
+{% endif %}
+
+    <form action="{{ url_for('upload_phc_document') }}"
+          method="POST"
+          enctype="multipart/form-data">
+
+        <input type="file"
+               name="document"
+               accept=".pdf,.txt"
+               required>
+
+        <button type="submit">Upload Document</button>
+
+    </form>
+
+    <a href="{{ url_for('ai_assistant_page') }}" class="back">
+        Back to AI Assistant
+    </a>
+
+</div>
+
+</body>
+</html>

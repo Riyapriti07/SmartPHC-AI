@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHC Monitoring Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image:
+    linear-gradient(rgba(0, 60, 80, 0.60), rgba(0, 40, 60, 0.70)),
+    url("/static/images/main1.jpg");
+
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+background-attachment: fixed;
+            color: #fff;
+            /* FIX (can't scroll to top of page): this used to be
+               `display:flex; align-items:center; height:100vh;`, which
+               vertically centered .container. Once the content got taller
+               than one screen, flexbox split the overflow evenly above AND
+               below the viewport - but browsers only let you scroll into
+               the bottom half of that overflow, so the top of the page was
+               permanently unreachable no matter how much you scrolled.
+               Switching to normal top-to-bottom block flow (min-height
+               instead of a locked height, no flex centering) makes 100% of
+               the content reachable by scrolling. */
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px 60px;
+            box-sizing: border-box;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto; /* horizontal centering, replacing flex */
+            text-align: center;
+        }
+        .top-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .top-buttons button {
+            padding: 10px 15px;
+            background-color: #ff6f61;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .top-buttons button:hover {
+            background-color: #ff3b2f;
+            transform: scale(1.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #444;
+        }
+        th {
+            background-color: #ff6f61;
+        }
+        .chart-container {
+            display: none;
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            /* FIX (unclear chart text): canvases had no defined height, so
+               Chart.js squeezed axis labels/ticks into a short box, causing
+               overlap on long PHC names. A fixed, generous height plus
+               maintainAspectRatio:false (set in the JS below) gives the
+               chart room to lay text out clearly. */
+            height: 420px;
+        }
+        .chart-container h2, .chart-container h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+            color: white;
+            font-weight: 500;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .delete-btn {
+        color: red;
+        font-size: 20px;
+        text-decoration: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .delete-btn:hover {
+        color: darkred;
+    }
+
+    /* ---- NEW: one collapsible card per PHC ---- */
+    .phc-card {
+        margin-top: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.06);
+    }
+    .phc-header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        background: rgba(255, 111, 97, 0.85);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-size: 1.05rem;
+        font-weight: 600;
+        text-align: left;
+        transition: background-color 0.25s ease;
+    }
+    .phc-header:hover {
+        background: rgba(255, 59, 47, 0.95);
+    }
+    .phc-arrow {
+        display: inline-block;
+        transition: transform 0.25s ease;
+    }
+    .phc-card.open .phc-arrow {
+        transform: rotate(90deg);
+    }
+    .phc-meta {
+        font-size: 0.82rem;
+        font-weight: 500;
+        opacity: 0.92;
+        white-space: nowrap;
+    }
+    /* Collapsed by default; opened by clicking the PHC name. */
+    .phc-body {
+        display: none;
+        padding: 6px 18px 20px;
+    }
+    .phc-card.open .phc-body {
+        display: block;
+    }
+    .phc-body h4 {
+        margin: 18px 0 0;
+        font-size: 1rem;
+        letter-spacing: 0.4px;
+        color: #ffd2cd;
+        text-align: left;
+        text-transform: uppercase;
+    }
+    .phc-body table {
+        margin-top: 8px;
+    }
+    .empty-cell {
+        text-align: center;
+        opacity: 0.65;
+        font-style: italic;
+    }
+    .unassigned-note {
+        margin: 14px 0 0;
+        font-size: 0.85rem;
+        opacity: 0.75;
+        text-align: left;
+    }
+    </style>
+</head>
+<body>
+    <a href="javascript:history.back()" class="back-btn">← Back</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="max-width:1000px; margin:60px auto 0;">
+          {% for category, message in messages %}
+            <div style="background:{{ '#ffdddd' if category in ['danger','warning'] else '#ddffdd' }}; color:#222; padding:12px 18px; border-radius:8px; margin-bottom:8px;">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <div class="container">
+        <div class="top-buttons">
+             <a href="#" class="right-btn" onclick="phcmail(event)">Send Update</a>
+            <button id="analysis-btn" onclick="showGraph()">Check Analysis</button>
+        </div>
+
+        <h2>PHC Monitoring Dashboard</h2>
+
+        <!-- CHANGED: the old layout was one flat "PHC Daily Updates" table
+             followed by one shared "Submitted Patients" table listing every
+             patient from every PHC. It is now one collapsible card per PHC -
+             click a PHC name and you get that PHC's daily updates and that
+             PHC's patients, and nothing from any other PHC. -->
+        <h3 id="updates-heading" style="margin-top:0;">PHC Daily Updates</h3>
+        <p id="updates-hint" style="opacity:0.75; font-size:0.9rem; margin:0;">
+            Click a PHC to see its submitted patient details.
+        </p>
+
+        <div id="phc-section">
+            {% for group in phc_groups %}
+            <div class="phc-card">
+                <button type="button" class="phc-header" onclick="togglePhc(this)">
+                    <span class="phc-title">
+                        <span class="phc-arrow">▸</span> {{ group.name }}
+                    </span>
+                    <span class="phc-meta">
+                        {{ group.patients|length }} patient record{{ '' if group.patients|length == 1 else 's' }}
+                        &nbsp;•&nbsp;
+                        {{ group.total_patient_count }} reported
+                    </span>
+                </button>
+
+                <div class="phc-body">
+                    <h4>Daily Updates</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patients</th>
+                                <th>Diagnosis</th>
+                                <th>Treatment</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for update in group.updates %}
+                            <tr>
+                                <td>{{ update.patient_count }}</td>
+                                <td>{{ update.diagnosis }}</td>
+                                <td>{{ update.treatment }}</td>
+                                <td>{{ update.date.strftime('%Y-%m-%d') }}</td>
+                                <td><span class="delete-btn" onclick="deleteRow(this)">X</span></td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="empty-cell">No daily updates from this PHC yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h4>Patient Details</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Phone</th>
+                                <th>Diagnosis</th>
+                                <th>Treatment</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for patient in group.patients %}
+                            <tr>
+                                <td>{{ patient.name }}</td>
+                                <td>{{ patient.age }}</td>
+                                <td>{{ patient.phone }}</td>
+                                <td>{{ patient.diagnosis }}</td>
+                                <td>{{ patient.treatment }}</td>
+                                <td>{{ patient.date.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="6" class="empty-cell">No patient details submitted by this PHC yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if group.name == unassigned_phc %}
+                    <p class="unassigned-note">
+                        These records were submitted before the patient form asked for a PHC.
+                        Re-submit them with a PHC selected to file them under the right one.
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <p style="opacity:0.7; margin-top:1.5rem;">No PHC data submitted yet.</p>
+            {% endfor %}
+        </div>
+
+        <div class="chart-container" id="chart-container">
+            <h3>PHC Patient Count Analysis</h3>
+            <canvas id="phcChart"></canvas>
+        </div>
+        <div class="chart-container" id="trend-container">
+    <h2>Daily Patient Count Trend</h2>
+    <canvas id="patientTrendChart"></canvas>
+</div>
+    </div>
+    <script>
+        // CHANGED: "Check Analysis" used to hide only the old #data-table,
+        // which left every submitted patient row sitting on screen under
+        // the graphs. It now hides the whole PHC section - daily updates
+        // AND patient details - so the analysis view is graphs only.
+        function showGraph() {
+            document.getElementById("phc-section").style.display = "none";
+            document.getElementById("updates-heading").style.display = "none";
+            document.getElementById("updates-hint").style.display = "none";
+
+            document.getElementById("chart-container").style.display = "block";
+            document.getElementById("trend-container").style.display = "block";
+
+            document.getElementById("analysis-btn").textContent = "Back to PHC Updates";
+            document.getElementById("analysis-btn").setAttribute("onclick", "showTable()");
+        }
+
+        function showTable() {
+            document.getElementById("phc-section").style.display = "block";
+            document.getElementById("updates-heading").style.display = "block";
+            document.getElementById("updates-hint").style.display = "block";
+
+            document.getElementById("chart-container").style.display = "none";
+            document.getElementById("trend-container").style.display = "none";
+
+            document.getElementById("analysis-btn").textContent = "Check Analysis";
+            document.getElementById("analysis-btn").setAttribute("onclick", "showGraph()");
+        }
+
+        // NEW: expand/collapse a single PHC card. Clicking one PHC closes
+        // the others, so you are always looking at exactly one PHC's data.
+        function togglePhc(header) {
+            var card = header.parentNode;
+            var wasOpen = card.classList.contains("open");
+
+            var allCards = document.querySelectorAll(".phc-card");
+            for (var i = 0; i < allCards.length; i++) {
+                allCards[i].classList.remove("open");
+            }
+
+            if (!wasOpen) {
+                card.classList.add("open");
+            }
+        }
+
+        // FIX: Chart.js's default tick/label color is near-black, which was
+        // almost invisible against this dashboard's dark card background
+        // (rgba(0,0,0,0.7)). All text/gridline colors below are now
+        // explicitly set to light colors, and axis titles were added so the
+        // bar chart's axes are actually labeled (the line chart already had
+        // axis titles but not readable colors).
+        Chart.defaults.color = "#e8eef2";
+        Chart.defaults.borderColor = "rgba(255, 255, 255, 0.15)";
+        // FIX (unclear text in chart screenshot): bump the base font size
+        // for every label Chart.js draws (ticks, legend, titles) in one
+        // place, instead of relying on the small ~12px default.
+        Chart.defaults.font.size = 14;
+
+        var phcLabels = {{ phc_labels | tojson }};
+        var phcData = {{ phc_counts | tojson }};
+
+        var ctx = document.getElementById("phcChart").getContext("2d");
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: phcLabels,
+                datasets: [{
+                    label: "Patient Count",
+                    data: phcData,
+                    backgroundColor: "rgba(255, 111, 97, 0.85)",
+                    borderColor: "rgba(255, 111, 97, 1)",
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    maxBarThickness: 60
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // fill the 420px container height above
+                plugins: {
+                    legend: {
+                        labels: { color: "#e8eef2", font: { size: 14 } }
+                    },
+                    tooltip: {
+                        backgroundColor: "rgba(0,0,0,0.85)",
+                        titleColor: "#fff",
+                        bodyColor: "#fff",
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: "#e8eef2", font: { size: 13 } },
+                        grid: { color: "rgba(255,255,255,0.12)" },
+                        title: {
+                            display: true,
+                            text: "Number of Patients",
+                            color: "#e8eef2",
+                            font: { size: 15, weight: "600" }
+                        }
+                    },
+                    x: {
+                        // FIX: long PHC names ("Government PHC Salem", etc.)
+                        // were overlapping at the default rotation. Angling
+                        // them and giving the axis more bottom room fixes it.
+                        ticks: {
+                            color: "#e8eef2",
+                            font: { size: 12 },
+                            maxRotation: 40,
+                            minRotation: 40,
+                            autoSkip: false
+                        },
+                        grid: { color: "rgba(255,255,255,0.08)" },
+                        title: {
+                            display: true,
+                            text: "PHC Name",
+                            color: "#e8eef2",
+                            font: { size: 15, weight: "600" }
+                        }
+                    }
+                }
+            }
+        });
+        function phcmail(event) {
+            event.preventDefault(); // Prevent page reload
+            
+            fetch('/phc-email', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("✅ Email sent successfully!");
+                } else {
+                    alert("❌ Error: " + data.message);
+                }
+            })
+            .catch(error => alert("❌ Error sending email: " + error));
+        }
+        
+    function deleteRow(btn) {
+        var row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+    </script>
+    <script>
+    const trendLabels = {{ trend_labels | tojson }};
+    const trendData = {{ trend_counts | tojson }};
+
+    const trendCtx = document
+        .getElementById('patientTrendChart')
+        .getContext('2d');
+
+    new Chart(trendCtx, {
+        type: 'line',
+
+        data: {
+            labels: trendLabels,
+
+            datasets: [{
+                label: 'Daily Patient Count',
+                data: trendData,
+
+                borderColor: "rgba(0, 180, 220, 1)",
+                backgroundColor: "rgba(0, 180, 220, 0.25)",
+                pointBackgroundColor: "rgba(0, 180, 220, 1)",
+                pointBorderColor: "#fff",
+
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // fill the 420px container height
+
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: "#e8eef2", font: { size: 14 } }
+                },
+                tooltip: {
+                    backgroundColor: "rgba(0,0,0,0.85)",
+                    titleColor: "#fff",
+                    bodyColor: "#fff",
+                    titleFont: { size: 14 },
+                    bodyFont: { size: 13 }
+                }
+            },
+
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: "#e8eef2", font: { size: 13 } },
+                    grid: { color: "rgba(255,255,255,0.12)" },
+
+                    title: {
+                        display: true,
+                        text: 'Number of Patients',
+                        color: "#e8eef2",
+                        font: { size: 15, weight: "600" }
+                    }
+                },
+
+                x: {
+                    ticks: { color: "#e8eef2", font: { size: 13 }, maxRotation: 30, minRotation: 0 },
+                    grid: { color: "rgba(255,255,255,0.08)" },
+                    title: {
+                        display: true,
+                        text: 'Date',
+                        color: "#e8eef2",
+                        font: { size: 15, weight: "600" }
+                    }
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html> 
