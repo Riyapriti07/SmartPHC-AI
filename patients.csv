@@ -1,0 +1,25 @@
+Name,Age,Phone,Diagnosis,Treatment,PHC,Date
+Priyanka S,21,9879879876,Fever,paracetamol ,,2026-08-05
+Priyanka S,21,9879879876,Fever, paracetamol,,2026-08-05
+Priyanka S,21,9879879876,Fever, paracetamol,,2026-08-05
+Priyanka S,21,9879879876,Fever, paracetamol,,2026-08-05
+Ram,30,9128934654,Typhoid,Antibiotic,,2026-08-28
+Kavin,23,8787865433,Asthma,"Salbutamol inhaler, controller inhaler when indicated",,2026-08-28
+Nithin,27,636905721,Malaria,ACT/ antimalarial treatment,,2026-08-28
+Vijay,50,7890654321,fungal infection,Albendazole,,2026-08-28
+Suriya,42,8899007766,Headache,Paracetamol,,2026-08-28
+Aravind,25,8989765444,Ear infection,"Ear examination, pain control",,2026-08-28
+Ramya,15,9876764832,fever,paracetamol,,2026-08-28
+Virat,39,9879879876,Dry Eye,"Eye examination, lubrication",,2026-09-16
+DEV,12,9765432567,Dehydration,ORS or IV fluids depending on severity,,2026-09-16
+ROHIT SHARMA,40,2345678901,Low Back Pain,"Activity advice, exercise, symptomatic treatment",,2026-09-16
+Ashwin,25,908765432,Fever,"Paracetamol, fluids, rest",Government PHC Erode,2026-09-18
+Nithya,21,900876543,Cold,"Rest, warm fluids, symptomatic medication",Government PHC Karur,2026-09-18
+Viki,33,8907654320,Cough,"Cough medication, warm fluids, rest",Government PHC Madurai,2026-09-18
+Priyanka ,14,8890768543,Sore throat,"Warm salt-water gargling, paracetamol, fluids",Government PHC Namakkal,2026-09-18
+Rohit,37,7869302890,Gastritis,"Antacid/PPI, dietary advice, avoid spicy foods",Government PHC Salem,2026-09-18
+Devaraj,44,6521457896,Diarrhoea,"ORS, fluids",Government PHC Theni,2026-09-18
+Kavin,34,2345678902,fever,medicine,Government PHC Erode,2026-09-21
+Alice,22,9889767543,cold,paracetamel,Government PHC Erode,2026-10-22
+Mukund,34,9865754326,cold and cough,"Symptomatic medication, warm fluids",Government PHC Erode,2026-11-19
+Indhu,33,8976543349,Sore Throat,warm salt-water gargling,Government PHC Erode,2026-11-19
